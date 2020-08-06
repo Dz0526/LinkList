@@ -1,3 +1,21 @@
+/*
+ * 双方向リンクリスト
+ *
+ * 主な関数 リスト作成　      -> create_list 引数にリストの長さを取る。 
+ *          ノード挿入        -> insert_node 引数は挿入するリストと場所、value
+ *          リストのvalue出力 -> show_list 引数は出力したいリスト
+ *
+ * 依存関数 リスト作成        -> create_list <- create_node, add_node <- search_tail
+ *          ノード挿入        -> insert_node <- search_node, len_list
+ *          リストのvalue出力 -> show_list
+ *
+ * 追加関数 指定位置のノードの削除      -> delete_node 
+ *          指定位置のノードのvalue変更 -> change_value
+ *          リスト関連のメモリ解放      -> delete_list
+ *
+ */
+
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -33,9 +51,8 @@ struct Node* search_node(struct Node* list, int locate) {
   struct Node* p = list; 
   int i;
 
-  for (i=0;i<locate;i++) {
+  for (i=0;i<locate;i++) 
     p = p->next;
-  }
 
   return p;
 }
@@ -105,16 +122,42 @@ void insert_node(struct Node* list, int value, int locate) {
   prev->next = new;
 }
 
+// 指定した位置のノードのvalueを変更する
+void change_value(struct Node* list, int value, int locate) {
+  // エラー処理
+  int len = len_list(list);
+
+  if (locate >= len) {
+    printf("out of range\n");
+    exit(1);
+  }
+
+  struct Node* p = search_node(list,locate);
+
+  // value を変更
+  p->value = value;
+}
+
 // 指定した位置のノードを削除
 void delete_node(struct Node* list, int locate) {
+  // エラー処理
+  int len = len_list(list);
+
+  if (locate >= len) {
+    printf("out of range\n");
+    exit(1);
+  }
+
   // 削除するノードを決定
   struct Node* p = search_node(list,locate);
   struct Node* prev = p->prev;
   struct Node* next = p->next;
 
-  // ポインタを変更
-  next->prev = prev;
-  prev->next = next;
+  // ポインタを変更 prevかnextがNULLだとしたらノードとしての型を持っていない
+  if (prev != NULL)
+    prev->next = next;
+  if (next != NULL)
+    next->prev = prev;
 
   // 削除するノードのメモリ解放
   free(p);
@@ -157,24 +200,27 @@ int main(void) {
   struct Node* list0;
   struct Node* list1;
 
-  list0 = create_node();
-  add_node(list0,10);
-  add_node(list0,20);
-  add_node(list0,30);
-  add_node(list0,40);
-  insert_node(list0,50,7);
+  list0 = create_list(3);
   show_list(list0);
-  delete_node(list0,1);
-  show_list(list0);
-
-  list1 = create_list(4);
-  show_list(list1);
   putchar('\n');
-  
-  printf("%d",len_list(list1));
+
+  insert_node(list0,1,2);
+  show_list(list0);
+  putchar('\n');
+
+  add_node(list0,3);
+  show_list(list0);
+  putchar('\n');
+
+  change_value(list0,2,0);
+  show_list(list0);
+  putchar('\n');
+
+  delete_node(list0,3);
+  show_list(list0);
+  putchar('\n');  
 
   delete_list(list0);
-  delete_list(list1);
 
   return 0;
 }
