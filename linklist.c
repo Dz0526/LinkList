@@ -8,6 +8,14 @@ struct Node {
   struct Node* prev;
 };
 
+// リストの長さを求める（エラー処理のため)
+int len_list(struct Node* list) {
+  if (list->next == NULL)
+    return 1;
+  else
+    return 1 + len_list(list->next);
+}
+
 // 末尾探し
 struct Node* search_tail(struct Node* list) {
   struct Node* p = list;
@@ -32,12 +40,13 @@ struct Node* search_node(struct Node* list, int locate) {
   return p;
 }
 
-// リスト生成
-struct Node* create_list(void) {
+// ノード生成
+struct Node* create_node(void) {
   struct Node* head = malloc(sizeof(struct Node));
    
   head->value = 0;
   head->next = NULL;
+  head->prev = NULL;
 
   return head;
 }
@@ -58,9 +67,29 @@ void add_node(struct Node* node, int value) {
    
 }
 
+// リスト生成
+struct Node* create_list(int n) { // 引数にリストに含むノードの数を取る
+  int i;
+  struct Node* first = create_node();
+
+  for (i=1;i<n;i++) 
+    add_node(first,0);
+  
+  return first;
+}
+
+
 // 指定した場所にノードを挿入
 // 引数をオプショナルにしたい.引数がなかったら末尾に挿入するような
 void insert_node(struct Node* list, int value, int locate) {
+  // エラー処理
+  int len = len_list(list);
+
+  if (locate >= len) {
+    printf("out of range\n");
+    exit(1);
+  }
+
   // 挿入する場所を場所を決定したい
   struct Node* p = search_node(list,locate);
   struct Node* prev = p->prev;
@@ -74,6 +103,21 @@ void insert_node(struct Node* list, int value, int locate) {
   // ずらした分をpに適応する
   p->prev = new;
   prev->next = new;
+}
+
+// 指定した位置のノードを削除
+void delete_node(struct Node* list, int locate) {
+  // 削除するノードを決定
+  struct Node* p = search_node(list,locate);
+  struct Node* prev = p->prev;
+  struct Node* next = p->next;
+
+  // ポインタを変更
+  next->prev = prev;
+  prev->next = next;
+
+  // 削除するノードのメモリ解放
+  free(p);
 }
 
 // リストのメモリを解放
@@ -111,16 +155,26 @@ void show_list(struct Node* list) {
 
 int main(void) {
   struct Node* list0;
+  struct Node* list1;
 
-  list0 = create_list();
+  list0 = create_node();
   add_node(list0,10);
   add_node(list0,20);
   add_node(list0,30);
   add_node(list0,40);
-  insert_node(list0,50,1);
+  insert_node(list0,50,7);
+  show_list(list0);
+  delete_node(list0,1);
   show_list(list0);
 
+  list1 = create_list(4);
+  show_list(list1);
+  putchar('\n');
+  
+  printf("%d",len_list(list1));
+
   delete_list(list0);
+  delete_list(list1);
 
   return 0;
 }
